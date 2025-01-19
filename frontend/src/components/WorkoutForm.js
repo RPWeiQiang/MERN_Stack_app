@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useWorkoutsContext } from "../hooks/useWorkoutsContext";
 
-const WorkoutForm=()=>{
+const WorkoutForm=({ workoutToEdit, setWorkoutToEdit })=>{
     const{dispatch}=useWorkoutsContext()
 
     const [title,setTitle]=useState('')
@@ -10,12 +10,20 @@ const WorkoutForm=()=>{
     const [error,setError]=useState(null)
     const [emptyFields,setEmptyFields]=useState([])
 
+    useEffect(() => {
+        if (workoutToEdit) {
+            setTitle(workoutToEdit.title);
+            setLoad(workoutToEdit.load);
+            setReps(workoutToEdit.reps);
+        }
+    }, [workoutToEdit]);
+
     const handleSubmit= async (e)=> {
         e.preventDefault()
         const workout={title,load,reps}
 
-        const response = await fetch ('/api/workouts',{
-            method:'POST',
+        const response = await fetch (workoutToEdit ? '/api/workouts/'+ workoutToEdit._id : '/api/workouts',{
+            method: workoutToEdit ? 'PATCH' : 'POST',
             body:JSON.stringify(workout),
             headers:{
                 'Content-Type':'application/json'
@@ -33,39 +41,42 @@ const WorkoutForm=()=>{
             setReps('')
             setError(null)
             setEmptyFields([])
-            console.log('new workout added',json)
-            dispatch({type: "CREATE_WORKOUT", payload: json})
-        
+            console.log(workoutToEdit ? 'Workout updated' : 'New workout added', json);
+            dispatch({ type: workoutToEdit ? "UPDATE_WORKOUT" : "CREATE_WORKOUT", payload: json });
+
+            if (workoutToEdit) {
+                setWorkoutToEdit(null);
+            }
         }
     }
     return(
-        <form className="create" onSubmit={handleSubmit}>
-            <h3>Add a New Workout</h3>
+         <form className="create" onSubmit={handleSubmit}>
+            <h3>{workoutToEdit ? 'Edit Workout' : 'Add a New Workout'}</h3>
 
-            <label>Excersise Title: </label>
+            <label>Exercise Title: </label>
             <input
                 type="text"
-                onChange={(e)=> setTitle(e.target.value)}
+                onChange={(e) => setTitle(e.target.value)}
                 value={title}
-                className={emptyFields.includes('title')? 'error':''}
+                className={emptyFields.includes('title') ? 'error' : ''}
             />
 
             <label>Load (in kg):</label>
             <input
                 type="number"
-                onChange={(e)=> setLoad(e.target.value)}
+                onChange={(e) => setLoad(e.target.value)}
                 value={load}
-                className={emptyFields.includes('load')? 'error':''}
+                className={emptyFields.includes('load') ? 'error' : ''}
             />
 
             <label>Reps:</label>
             <input
                 type="number"
-                onChange={(e)=> setReps(e.target.value)}
+                onChange={(e) => setReps(e.target.value)}
                 value={reps}
-                className={emptyFields.includes('reps')? 'error':''}
+                className={emptyFields.includes('reps') ? 'error' : ''}
             />
-            <button>Add Workout</button>
+            <button>{workoutToEdit ? 'Update Workout' : 'Add Workout'}</button>
             {error && <div className="error">{error}</div>}
         </form>
     )

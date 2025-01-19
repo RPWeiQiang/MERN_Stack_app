@@ -73,7 +73,8 @@ const updateWorkout = async (req, res) => {
     { _id: id },
     {
       ...req.body,
-    }
+    },
+    {new:true}
   );
   if (!workout) {
     return res.status(400).json({ error: "Workout not found" });
