@@ -22,7 +22,7 @@ const WorkoutForm=({ workoutToEdit, setWorkoutToEdit })=>{
         e.preventDefault()
         const workout={title,load,reps}
 
-        const response = await fetch (workoutToEdit ? '/api/workouts/'+ workoutToEdit._id : '/api/workouts',{
+        const response = await fetch (workoutToEdit ? `${process.env.REACT_APP_API_URL}/api/workouts/${workoutToEdit._id}` : `${process.env.REACT_APP_API_URL}/api/workouts`,{
             method: workoutToEdit ? 'PATCH' : 'POST',
             body:JSON.stringify(workout),
             headers:{
