@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { useWorkoutsContext } from "../hooks/useWorkoutsContext";
+import { useAuthContext } from "../hooks/useAuthContext";
 
 const WorkoutForm=({ workoutToEdit, setWorkoutToEdit })=>{
     const{dispatch}=useWorkoutsContext()
+    const { user } = useAuthContext()
 
     const [title,setTitle]=useState('')
     const [load,setLoad]=useState('')
@@ -20,13 +22,20 @@ const WorkoutForm=({ workoutToEdit, setWorkoutToEdit })=>{
 
     const handleSubmit= async (e)=> {
         e.preventDefault()
+
+        if (!user) {
+            setError('You must be logged in')
+            return
+        }
+
         const workout={title,load,reps}
 
         const response = await fetch (workoutToEdit ? `${process.env.REACT_APP_API_URL}/api/workouts/${workoutToEdit._id}` : `${process.env.REACT_APP_API_URL}/api/workouts`,{
             method: workoutToEdit ? 'PATCH' : 'POST',
             body:JSON.stringify(workout),
             headers:{
-                'Content-Type':'application/json'
+                'Content-Type':'application/json',
+                'Authorization':`Bearer ${user.token}`
             }
         })
         const json= await response.json()
